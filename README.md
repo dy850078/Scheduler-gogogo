@@ -1,6 +1,6 @@
 # virtflow-scheduler-go
 
-
+```bash
 virtflow-go/
 ├── go.mod
 ├── go.sum
@@ -30,3 +30,4 @@ virtflow-go/
 │   └── config.yaml               # RabbitMQ URL / DB path
 │
 └── README.md
+```
