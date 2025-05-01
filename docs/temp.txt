@@ -1,0 +1,6 @@
+export RABBITMQ_URL=amqp://guest:guest@localhost:5672/
+go run cmd/api_server.go
+
+curl -X POST http://localhost:8080/schedule \
+  -H "Content-Type: application/json" \
+  -d '{"requested_cpu":4,"requested_memory":8192,"requested_pool":"default","dedicated":false,"task_id":"demo-001"}'
