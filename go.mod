@@ -1,8 +1,8 @@
-module virtflow-scheduler
+module github.com/dy850078/virtflow-scheduler-go
 
 go 1.24.1
 
 require (
-	github.com/google/uuid v1.6.0
-	github.com/gorilla/mux v1.8.1
+	github.com/google/uuid v1.6.0 // indirect
+	github.com/rabbitmq/amqp091-go v1.10.0 // indirect
 )
