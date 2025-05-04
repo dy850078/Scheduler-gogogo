@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"virtflow-scheduler-go/internal/model"
+	"github.com/dy850078/virtflow-scheduler-go/internal/model"
 
 	"github.com/rabbitmq/amqp091-go"
 )
@@ -48,9 +48,13 @@ func PublishTask(amqpURL string, req model.SchedulingRequest) error {
 		})
 
 	if err != nil {
+		log.Printf("[ERROR] Failed to publish task %s: %v", req.TaskID, err)
 		return err
+	} else {
+		log.Printf("[DEBUG] Successfully published task: %s", req.TaskID)
+		return nil
 	}
 
-	log.Printf("[INFO] Published task: %s", req.TaskID)
-	return nil
+	// log.Printf("[INFO] Published task: %s", req.TaskID)
+	// return nil
 }
