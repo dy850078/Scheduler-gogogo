@@ -8,6 +8,7 @@ import (
 
 	"github.com/dy850078/virtflow-scheduler-go/internal/model"
 	"github.com/dy850078/virtflow-scheduler-go/internal/queue"
+	"github.com/dy850078/virtflow-scheduler-go/internal/util"
 )
 
 func main() {
@@ -31,6 +32,7 @@ func handleSchedule(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	req.TaskID = util.GenerateTaskID()
 	if req.TaskID == "" {
 		http.Error(w, "Missing task_id", http.StatusBadRequest)
 		return
