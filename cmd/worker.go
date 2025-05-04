@@ -70,28 +70,33 @@ func consumeLoop(ctx context.Context, msgs <-chan amqp091.Delivery, strategy alg
 			log.Println("[INFO] Context cancelled. Exiting loop.")
 			return
 		case d := <-msgs:
-			var req model.SchedulingRequest
-			if err := json.Unmarshal(d.Body, &req); err != nil {
-				log.Printf("[WARN] Failed to parse task: %v", err)
-				continue
-			}
+			go handleMessage(d, strategy, store)
 
-			nodes := model.MockNodes()
-			selected := strategy.SelectBestNode(req, nodes)
-			var status, selectedNode string
-
-			if selected != nil {
-				status = "success"
-				selectedNode = selected.Name
-				log.Printf("[INFO] Task %s scheduled to node %s [pool=%s, cpu=%d, mem=%d]",
-					req.TaskID, selected.Name, req.RequestedPool, req.RequestedCPU, req.RequestedMemory)
-			} else {
-				status = "failed"
-				log.Printf("[WARN] No suitable node for task %s", req.TaskID)
-			}
-			if err := store.UpdateStatus(req.TaskID, status, selectedNode); err != nil {
-				log.Printf("[ERROR] Failed to update status: %v", err)
-			}
 		}
+	}
+}
+
+func handleMessage(d amqp091.Delivery, strategy algorithm.SchedulingStrategy, store *db.TaskStore) {
+	var req model.SchedulingRequest
+	if err := json.Unmarshal(d.Body, &req); err != nil {
+		log.Printf("[WARN] Failed to parse task: %v", err)
+		return
+	}
+
+	nodes := model.MockNodes()
+	selected := strategy.SelectBestNode(req, nodes)
+	var status, selectedNode string
+
+	if selected != nil {
+		status = "success"
+		selectedNode = selected.Name
+		log.Printf("[INFO] Task %s scheduled to node %s [pool=%s, cpu=%d, mem=%d]",
+			req.TaskID, selected.Name, req.RequestedPool, req.RequestedCPU, req.RequestedMemory)
+	} else {
+		status = "failed"
+		log.Printf("[WARN] No suitable node for task %s", req.TaskID)
+	}
+	if err := store.UpdateStatus(req.TaskID, status, selectedNode); err != nil {
+		log.Printf("[ERROR] Failed to update status: %v", err)
 	}
 }
