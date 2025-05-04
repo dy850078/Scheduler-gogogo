@@ -3,6 +3,8 @@ package queue
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"log"
 	"time"
 
@@ -48,13 +50,17 @@ func PublishTask(amqpURL string, req model.SchedulingRequest) error {
 		})
 
 	if err != nil {
+		// Distinguish timeout errors
+		if errors.Is(err, context.DeadlineExceeded) {
+			log.Printf("[ERROR] Timeout while publishing task %s", req.TaskID)
+			return fmt.Errorf("publish timeout: %w", err)
+		}
+
 		log.Printf("[ERROR] Failed to publish task %s: %v", req.TaskID, err)
-		return err
-	} else {
-		log.Printf("[DEBUG] Successfully published task: %s", req.TaskID)
-		return nil
+		return fmt.Errorf("publish: %w", err)
 	}
 
-	// log.Printf("[INFO] Published task: %s", req.TaskID)
-	// return nil
+	log.Printf("[DEBUG] Successfully published task: %s", req.TaskID)
+	return nil
+
 }
