@@ -68,25 +68,41 @@ selected := strategy.SelectBestNode(request, nodes)
 
 ---
 
-## 🛠 Backlog（開發任務總覽）
+# virtflow-scheduler-go Backlog Overview
 
-| 週期 | 任務項目                                       | 狀態     | 備註 / 說明                                  |
-|------|------------------------------------------------|----------|-----------------------------------------------|
-| Week 1 | 實作 Producer CLI（publish_task）             | ✅ 已完成 | 使用 RabbitMQ 發送 SchedulingRequest 任務    |
-| Week 2 | 實作 Consumer CLI（worker 基礎版）             | ✅ 已完成 | Consume 任務，並印出 SchedulingRequest        |
-| Week 3 | 設計 Strategy Pattern 架構                    | ✅ 已完成 | 定義 interface 與實作 `CPUStrategy`          |
-| Week 3 | 建立空殼 `MemoryStrategy`, `HybridStrategy`   | ✅ 已完成 | 作為後續可插入演算法預留點                   |
-| Week 3 | consumeLoop 中套用 strategy pattern          | ✅ 已完成 | 用 interface 呼叫可替換策略                   |
-| Week 3 | 撰寫系統架構與專案 README                    | ✅ 已完成 | 包含功能總覽、檔案架構、JSON 與使用方式     |
-| Week 4 | 撰寫 `MemoryStrategy`, `HybridStrategy`       | ⏳ 進行中 | CPU 以外邏輯選擇節點（記憶體、混合評分）     |
-| Week 4 | 實作 SQLite 任務狀態儲存模組（成功 / 失敗）  | ⏳ 進行中 | 建立 `task_status` table，更新 task 狀態     |
-| Week 5 | 封裝 Leader Election 模組                     | ⏳ 規劃中 | 使用 `k8s.io/client-go/tools/leaderelection` |
-| Week 5 | Worker 啟動前需確認為 Leader 才進行任務處理   | ⏳ 規劃中 | 非 leader 則 idle（不可 consume）            |
-| Week 6 | 透過 ConfigMap 或 ENV 選擇 strategy           | ⏳ 規劃中 | 支援 `SCHEDULING_STRATEGY=cpu` 類型控制       |
-| Week 6 | 撰寫 Strategy Factory (`GetStrategy`)         | ⏳ 規劃中 | 將 string 對應到實體策略 struct              |
-| Week 7 | 發送 Webhook（任務 success / failed）         | ⏳ 規劃中 | 用 HTTP POST 將結果通知外部系統              |
-| Week 8 | 多 worker 支援 + Graceful shutdown           | ⏳ 規劃中 | 多 goroutine + context cancel 控制結束        |
-| Week 9 | 撰寫單元測試（演算法 + Consumer + DB）       | ⏳ 規劃中 | 使用 table-driven test，提升穩定性            |
+## 🔧 Development Backlog
+
+| 週期     | 任務項目                                 | 狀態    |  備註                                 |
+| ------ | ------------------------------------ | ----- | ---------------------------------------- |
+| Week 1 | 實作 Producer CLI (發送 publish\_task)   | ✅ 已完成 | 用 RabbitMQ 發送 SchedulingRequest 任務       |
+| Week 2 | 實作 Consumer CLI (執行 worker)          | ✅ 已完成 | 讀取任務並輸出 log                              |
+| Week 3 | 設計 Strategy Pattern 架構               | ✅ 已完成 | 定義 SchedulingStrategy interface + CPU 策略 |
+| Week 3 | 建立 MemoryStrategy, HybridStrategy 空殼 | ✅ 已完成 | TODO 傳續實作                                |
+| Week 3 | consumeLoop 套用 Strategy Pattern      | ✅ 已完成 | 用 interface 呼叫可切換策略                      |
+| Week 3 | 撰寫系統 README + 架構圖                    | ✅ 已完成 | markdown 包含條狠 clear                      |
+| Week 4 | 實作 MemoryStrategy + HybridStrategy   | ⏳ 進行中 | 據 memory/混合比量 算分邏輯                       |
+| Week 4 | 換成 PostgreSQL (替代 SQLite)            | ✅ 已完成 | internal/db + task\_status 表             |
+| Week 5 | Leader Election 機制                 | ⏳ 規劃中 | 會用 k8s.io/client-go                      |
+| Week 5 | Worker 必須為 leader 才啟用                | ⏳ 規劃中 | idle follower, active leader             |
+| Week 6 | 支援 ENV / ConfigMap 切換 Strategy       | ⏳ 規劃中 | SCHEDULING\_STRATEGY=xxx                 |
+| Week 6 | 撰寫 Strategy Factory (GetStrategy)    | ⏳ 規劃中 | string -> struct 映射器                     |
+| Week 7 | 發送 Webhook (成功/失敗)                   | ⏳ 規劃中 | task callback HTTP POST                  |
+| Week 8 | 多 Worker + Graceful Shutdown         | ⏳ 規劃中 | goroutine + context 關閉                   |
+| Week 9 | 撰寫單元測試                               | ⏳ 規劃中 | algorithm / DB / worker                  |
+
+---
+
+## 💡 Concurrency Safety / Performance Enhancement Backlog
+
+| ID | 項目                                | 狀態    | 備註                      |
+| -- | --------------------------------- | ----- | ----------------------- |
+| C1 | 加入處理耗時經過記錄                        | ✅ 已完成 | time.Since() + log      |
+| C2 | goroutine 內 recover 保護機制          | ⏳ 待開發 | 避免 panic 擊敗全體 worker    |
+| C3 | RabbitMQ channel 加入 prefetchCount | ⏳ 待開發 | 限制協約同時處理數               |
+| C4 | 分粘 publishTask 錯誤類型               | ✅ 已完成 | timeout 與網路錯誤分開         |
+| C5 | publishTask 加入 retry (3 次)        | ⏳ 待開發 | 用 for loop + backoff 重試 |
+
+---
 
 
 ## 🧭 Golang Developer 能力升級表（Weekly Path）
