@@ -9,5 +9,5 @@ for i in {1..5}; do
       "requested_pool": "default",
       "dedicated": false
     }'
-  echo ""  # 換行
+  echo ""
 done

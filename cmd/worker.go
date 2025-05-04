@@ -11,7 +11,6 @@ import (
 	"github.com/dy850078/virtflow-scheduler-go/internal/algorithm"
 	"github.com/dy850078/virtflow-scheduler-go/internal/db"
 	"github.com/dy850078/virtflow-scheduler-go/internal/model"
-
 	"github.com/rabbitmq/amqp091-go"
 )
 
@@ -39,6 +38,16 @@ func main() {
 	ch, err := conn.Channel()
 	failOnError(err, "open RabbitMQ channel")
 	defer ch.Close()
+
+	_, err = ch.QueueDeclare(
+		"task.schedule", // name
+		true,            // durable
+		false,           // auto-delete
+		false,           // exclusive
+		false,           // no-wait
+		nil,             // args
+	)
+	failOnError(err, "Failed to declare a queue")
 
 	msgs, err := ch.Consume("task.schedule", "", true, false, false, false, nil)
 	failOnError(err, "consume")
@@ -69,13 +78,19 @@ func consumeLoop(ctx context.Context, msgs <-chan amqp091.Delivery, strategy alg
 
 			nodes := model.MockNodes()
 			selected := strategy.SelectBestNode(req, nodes)
+			var status, selectedNode string
 
 			if selected != nil {
-				log.Printf("[INFO] Task %s scheduled to node %s", req.TaskID, selected.Name)
-				_ = store.UpdateStatus(req.TaskID, "success", selected.Name)
+				status = "success"
+				selectedNode = selected.Name
+				log.Printf("[INFO] Task %s scheduled to node %s [pool=%s, cpu=%d, mem=%d]",
+					req.TaskID, selected.Name, req.RequestedPool, req.RequestedCPU, req.RequestedMemory)
 			} else {
-				log.Printf("[WARN] No node selected for task %s", req.TaskID)
-				_ = store.UpdateStatus(req.TaskID, "failed", "")
+				status = "failed"
+				log.Printf("[WARN] No suitable node for task %s", req.TaskID)
+			}
+			if err := store.UpdateStatus(req.TaskID, status, selectedNode); err != nil {
+				log.Printf("[ERROR] Failed to update status: %v", err)
 			}
 		}
 	}
