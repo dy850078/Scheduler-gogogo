@@ -6,17 +6,11 @@ import (
 	"log"
 	"time"
 
+	"github.com/dy850078/virtflow-scheduler-go/internal/model"
+
 	"github.com/google/uuid"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
-
-type SchedulingRequest struct {
-	RequestedCPU    int    `json:"requested_cpu"`
-	RequestedMemory int    `json:"requested_memory"`
-	RequestedPool   string `json:"requested_pool"`
-	Dedicated       bool   `json:"dedicated"`
-	TaskID          string `json:"task_id"`
-}
 
 func failOnError(err error, msg string) {
 	if err != nil {
@@ -48,7 +42,7 @@ func main() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	request := SchedulingRequest{
+	request := model.SchedulingRequest{
 		RequestedCPU:    4,
 		RequestedMemory: 8192,
 		RequestedPool:   "default",
