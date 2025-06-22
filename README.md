@@ -1,5 +1,5 @@
 
-# Virtflow Scheduler (Go Version)
+# Scheduler-gogogo (Go Version)
 
 Virtflow Scheduler 是一個可擴展、具備策略模式與支援 Kubernetes Leader Election 的任務排程系統，  
 目標是將 VM 節點依據可用資源與策略規則，排程至最合適的 Bare Metal Server。
